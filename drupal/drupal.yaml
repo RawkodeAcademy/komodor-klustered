@@ -54,19 +54,6 @@ spec:
       containers:
         - image: drupal
           name: drupal
-          env:
-            - name: POSTGRES_HOST
-              value: drupal-db-rw
-            - name: POSTGRES_USER
-              valueFrom:
-                secretKeyRef:
-                  name: drupal-db-superuser
-                  key: username
-            - name: POSTGRES_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: drupal-db-superuser
-                  key: password
           ports:
             - containerPort: 80
               name: drupal
@@ -86,4 +73,4 @@ spec:
       volumes:
         - name: drupal
           persistentVolumeClaim:
-            claimName: drupal
+            claimName: drupal-pvc
