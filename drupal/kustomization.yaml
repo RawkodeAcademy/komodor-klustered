@@ -1,5 +1,9 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
+
+commonAnnotations:
+  app.komodor.com/drupal: https://github.com/RawkodeAcademy/komodor-klustered
+
 resources:
   - pg.yaml
   - drupal.yaml
