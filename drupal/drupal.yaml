@@ -1,0 +1,89 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: drupal
+  labels:
+    app: drupal
+spec:
+  ports:
+    - port: 80
+  selector:
+    app: drupal
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: drupal
+  labels:
+    app: drupal
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: drupal
+  labels:
+    app: drupal
+spec:
+  selector:
+    matchLabels:
+      app: drupal
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: drupal
+    spec:
+      initContainers:
+        - name: init-sites-volume
+          image: drupal
+          command: ["/bin/bash", "-c"]
+          args:
+            [
+              "cp -r /var/www/html/sites/ /data/; chown www-data:www-data /data/ -R",
+            ]
+          volumeMounts:
+            - mountPath: /data
+              name: drupal
+      containers:
+        - image: drupal
+          name: drupal
+          env:
+            - name: POSTGRES_HOST
+              value: drupal-db-rw
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: drupal-db-superuser
+                  key: username
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: drupal-db-superuser
+                  key: password
+          ports:
+            - containerPort: 80
+              name: drupal
+          volumeMounts:
+            - mountPath: /var/www/html/modules
+              name: drupal
+              subPath: modules
+            - mountPath: /var/www/html/profiles
+              name: drupal
+              subPath: profiles
+            - mountPath: /var/www/html/sites
+              name: drupal
+              subPath: sites
+            - mountPath: /var/www/html/themes
+              name: drupal
+              subPath: themes
+      volumes:
+        - name: drupal
+          persistentVolumeClaim:
+            claimName: drupal

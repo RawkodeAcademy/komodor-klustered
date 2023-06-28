@@ -1,0 +1,13 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: drupal-db
+spec:
+  instances: 3
+  primaryUpdateStrategy: unsupervised
+  storage:
+    size: 1Gi
+  bootstrap:
+    initdb:
+      postInitTemplateSQL:
+        - CREATE EXTENSION pg_trgm;
